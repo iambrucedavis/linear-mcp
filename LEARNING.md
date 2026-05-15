@@ -4,6 +4,16 @@ Bruce's running notebook. What I learned building the Linear MCP server, explain
 
 ---
 
+## 2026-05-15 (Day 7) — Why a Personal API key, not OAuth
+
+The spec floated OAuth for week 2. I decided to keep the Personal API key (PAT) and document OAuth as a future extension instead. That's a security decision, so here is the reasoning.
+
+A PAT and an OAuth token solve different problems. OAuth shines when *many users* each grant a *hosted service* limited, revocable access — the service holds tokens on people's behalf. This server is not that. It is a local process one person runs on their own machine, talking to their own Linear account. In that setting a PAT is not the lazy option — it is the *correct* one: the server inherits exactly its owner's Linear permissions and nothing more, and there is no token storage or refresh machinery to get wrong. Bolting an OAuth flow onto a single-user local tool would add attack surface, not remove it. OAuth becomes the right answer the moment this goes hosted and multi-tenant — and the threat model (SECURITY.md, Day 9) says exactly that, framing OAuth as the enterprise extension rather than shipping a half-built flow now.
+
+**Why this matters for the job hunt:** "I chose a PAT over OAuth, and I can tell you precisely when that flips" is a stronger answer than reaching for OAuth because it sounds more secure. Knowing that the right auth model depends on the deployment shape is exactly the IAM judgment this project is meant to show.
+
+---
+
 ## 2026-05-15 (Day 6) — The audit trail rides on stderr
 
 Day 6 was a polish pass. The main change: every tool now logs each call through one shared `logToolCall` function instead of six near-identical inline blocks. Worth a note because of *where* those logs go.

@@ -4,6 +4,28 @@ Bruce's running notebook. What I learned building the Linear MCP server, explain
 
 ---
 
+## 2026-05-15 (Day 10) — Frequency is the real cost lever, not model choice
+
+Day 10 was the cost analysis. The obvious story is "Haiku is cheaper than Sonnet, so use Haiku where you can." True, but it misses the bigger point.
+
+What actually shows up on the monthly bill is *frequency × unit cost*. The two Haiku tools — `triage_inbox` and `find_orphans` — aren't just cheap; they're cheap *and* they're the ones you run constantly (you triage an inbox every day). The four Sonnet tools cost 5-7× more per call, but you run them occasionally — scope a new issue, write the weekly summary. So the right model decision isn't "Haiku everywhere to save money," it's "put the *high-frequency* tools on the cheap model." A worked example in COST_ANALYSIS.md: a normal user's monthly cost is ~$2.60, and the most-frequent tool (triage) is only ~12% of that *because* it's on Haiku — on Sonnet it would be half the bill.
+
+Also worth knowing: output tokens cost 5× input tokens, and a reasoning model's "thinking" is billed as output. So cost optimization means controlling what the model *writes*, not what it reads.
+
+**Why this matters for the job hunt:** "I picked the model per tool by frequency, not just by capability" is a sharper, more senior answer than "I used the cheap model where I could." It shows you reason about cost as a system property, not a per-call number.
+
+---
+
+## 2026-05-15 (Day 10) — Caching is wired but doesn't fire, and I said so
+
+Every tool sets `cache_control` on its system prompt — prompt caching, which lets Anthropic charge a fraction of the price for a repeated prefix. But there's a catch I found while writing the cost doc: Anthropic only caches a prefix above a minimum size — about 4,096 tokens for Haiku. The system prompts here are 250-400 tokens. They will never hit the cache. `cache_read_input_tokens` reads 0, every time.
+
+I left the `cache_control` in and wrote a whole section of COST_ANALYSIS.md explaining that it's currently inactive. The temptation was to either quietly remove it (looks like it was never considered) or quietly leave it (looks like it works). Documenting "this is wired, here's exactly why it doesn't fire yet, here's when it would" is the honest third option — and it's more useful to a reader than either pretense.
+
+**Why this matters for the job hunt:** Writing down what *doesn't* work, precisely, is a credibility signal. A portfolio piece that only claims wins reads like marketing; one that says "here's a thing I wired up that doesn't pay off yet, and here's the threshold where it would" reads like an engineer.
+
+---
+
 ## 2026-05-15 (Day 9) — The tool you don't ship can't be misused
 
 Day 9 was the threat model (`docs/SECURITY.md`). The decision I'm proudest of is one of omission. The server exposes six tools, and all six only *read and reason* — there is no `delete_issue`, no `update_issue`, no raw-query tool.

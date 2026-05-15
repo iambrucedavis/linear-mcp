@@ -4,6 +4,26 @@ Bruce's running notebook. What I learned building the Linear MCP server, explain
 
 ---
 
+## 2026-05-15 (Day 9) — The tool you don't ship can't be misused
+
+Day 9 was the threat model (`docs/SECURITY.md`). The decision I'm proudest of is one of omission. The server exposes six tools, and all six only *read and reason* — there is no `delete_issue`, no `update_issue`, no raw-query tool.
+
+That is not laziness; it is the central security control. An MCP server hands a language model a set of capabilities. Every capability you expose is something an attacker — via prompt injection — or the model itself, via a hallucination, might trigger. The most reliable way to guarantee a capability is never misused is to not implement it. You cannot delete an issue through this server no matter what you say to it, because the server contains no code that deletes issues. The worst case for the entire server is a bad *read*.
+
+**Why this matters for the job hunt:** "I treated the tool surface as the authorization boundary, and kept it read-only on purpose" is exactly the least-privilege thinking an IAM/security background is supposed to produce. It reframes "what features did you cut" as "what attack surface did you decline to create."
+
+---
+
+## 2026-05-15 (Day 9) — You can't stop prompt injection, so make it not matter
+
+Nobody has solved prompt injection — the trick where untrusted text (here, an issue title someone else wrote) tries to hijack the model's instructions. So the threat model does not claim to. It does something more useful: it makes a *successful* injection boring.
+
+Walk it through. Suppose an attacker files an issue whose title fully hijacks the model during `triage_inbox`. What can they actually achieve? They cannot delete or change anything — no destructive tools exist (the other Day 9 entry). They cannot forge a malicious link — the model never controls URLs; those are joined in from real Linear data. They cannot exfiltrate secrets — keys never enter the model's context. The maximum damage is a notification sorted into the wrong urgency bucket. That is the whole blast radius. The defense is not a wall that stops the attack; it is an architecture where the attack, even when it lands, has nowhere to go.
+
+**Why this matters for the job hunt:** This is the security mindset that scales — assume the perimeter fails, and design so the failure is contained. "I can't promise no injection; I can promise a successful one can't do anything" is a far more credible claim than "my prompt is injection-proof."
+
+---
+
 ## 2026-05-15 (Day 8) — The eval harness, and why most MCP servers don't have one
 
 Today's build is the evaluation harness — the single biggest thing separating this from a typical MCP server. Most ship with nothing; "it worked when I tried it" is the whole quality story. That does not survive contact with a model that behaves a little differently every run.

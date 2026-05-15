@@ -4,6 +4,26 @@ Bruce's running notebook. What I learned building the Linear MCP server, explain
 
 ---
 
+## 2026-05-15 (Day 3) — When a tool gets to "think," and when it doesn't
+
+Claude can run two ways: answer immediately, or do hidden reasoning first ("adaptive thinking" — the model itself decides how much to deliberate before replying). Thinking costs extra time and tokens, so it isn't free. The question for each tool: is it worth it?
+
+`triage_inbox` (Day 2) gets no thinking. Sorting notifications into four urgency buckets is fast pattern-matching — deliberation wouldn't make it more accurate, just slower and pricier, and it runs on cheap Haiku. `scope_issue` (today) turns thinking on. Breaking a vague issue into subtasks, spotting risks, estimating effort — that's real planning, the kind of work where reasoning visibly improves the answer — and it runs on Sonnet, the stronger model. The rule emerging across the six tools: match the model *and* the thinking budget to the actual cognitive load. Cheap and fast for classification; strong and deliberate for judgment.
+
+**Why this matters for the job hunt:** It shows cost-awareness as a design discipline, not an afterthought. "I turned thinking on for the planning tools and off for the classification tool, and here's why" is a concrete, defensible decision — and the seed of the Day 10 cost analysis.
+
+---
+
+## 2026-05-15 (Day 3) — Telling the model to return nothing
+
+A subtle failure mode of AI tools: when you ask for a list, the model feels obliged to fill it. Ask "what are the risks?" and a model will often invent a weak risk rather than admit there aren't any — an empty answer *feels* unhelpful to it. That produces noise: fake risks, padded subtask lists, made-up questions.
+
+`scope_issue`'s system prompt fights this directly. It says, in several places, things like "if there are genuinely no notable risks, return an empty list rather than inventing one" and "do not pad the breakdown with filler." It also tells the model to *lower its confidence* and say so when an issue is too vague to scope well, instead of bluffing. The goal is a tool that's honest about uncertainty — a short accurate breakdown beats a long padded one.
+
+**Why this matters for the job hunt:** "I prompt the model to admit when there's nothing to say" signals you've actually shipped LLM features and learned their failure modes. Padding and false confidence are exactly what erodes trust in an AI product.
+
+---
+
 ## 2026-05-15 — Why the server calls Claude itself
 
 MCP has a feature called "sampling" where the server can ask the *client* (Claude Desktop, Claude Code) to run an AI completion on its behalf — the server borrows the client's model access and never needs its own API key. We didn't use it. This server calls the Anthropic API directly, with its own key.

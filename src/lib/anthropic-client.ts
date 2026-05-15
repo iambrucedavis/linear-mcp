@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { z } from "zod";
 import { getAnthropicApiKey } from "./config.js";
 
 /**
@@ -32,4 +33,35 @@ let client: Anthropic | undefined;
 export function getAnthropicClient(): Anthropic {
   client ??= new Anthropic({ apiKey: getAnthropicApiKey() });
   return client;
+}
+
+/**
+ * Token-usage shape attached to every tool's output. Feeds the Day 10 cost
+ * analysis — every tool reports exactly what it spent.
+ */
+export const UsageSchema = z.object({
+  input_tokens: z.number().int(),
+  output_tokens: z.number().int(),
+  cache_read_input_tokens: z.number().int(),
+  cache_creation_input_tokens: z.number().int(),
+});
+
+export type Usage = z.infer<typeof UsageSchema>;
+
+/** Structural shape of the `usage` object on an Anthropic message response. */
+interface RawUsage {
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_input_tokens?: number | null;
+  cache_creation_input_tokens?: number | null;
+}
+
+/** Normalizes an Anthropic response's usage into our {@link UsageSchema} shape (nulls → 0). */
+export function extractUsage(usage: RawUsage): Usage {
+  return {
+    input_tokens: usage.input_tokens,
+    output_tokens: usage.output_tokens,
+    cache_read_input_tokens: usage.cache_read_input_tokens ?? 0,
+    cache_creation_input_tokens: usage.cache_creation_input_tokens ?? 0,
+  };
 }

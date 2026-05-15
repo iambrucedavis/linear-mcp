@@ -7,6 +7,14 @@
     "linear-mcp": "./dist/index.js"
   },
   "main": "./dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iambrucedavis/linear-mcp.git"
+  },
+  "homepage": "https://github.com/iambrucedavis/linear-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/iambrucedavis/linear-mcp/issues"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",

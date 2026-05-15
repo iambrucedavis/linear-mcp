@@ -4,6 +4,16 @@ Bruce's running notebook. What I learned building the Linear MCP server, explain
 
 ---
 
+## 2026-05-15 (live run) — The eval harness caught a real bug on day one
+
+For the whole build, the six tools were never run against a live Linear workspace — there were no API keys. The first real test was the eval harness, run against an actual Linear account with real data.
+
+It earned its existence immediately. One case checks that `scope_issue`, given a bogus issue ID, fails with a clear message. It failed — not because the tool crashed, but because the *message* was wrong. The code assumed Linear returns an empty result for a missing issue. Linear actually throws an error instead. So the friendly "No Linear issue found" message I wrote never ran; the caller got Linear's raw "Entity not found: Issue" text wrapped in a generic failure. A small bug, invisible in every offline test, and exactly the kind of thing only a live run surfaces. The fix was a few lines. The live pass rate went from 90% to 93%.
+
+**Why this matters for the job hunt:** This is the eval harness doing the one job it exists for — catching a real defect before a user did. "I built an eval harness, and on its first live run it caught a bug in my error handling" is a better story than a clean 100%, because it is true and it shows the harness has teeth.
+
+---
+
 ## 2026-05-15 (Day 10) — Frequency is the real cost lever, not model choice
 
 Day 10 was the cost analysis. The obvious story is "Haiku is cheaper than Sonnet, so use Haiku where you can." True, but it misses the bigger point.

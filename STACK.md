@@ -1,6 +1,6 @@
 # STACK.md
 
-Pinned dependency versions and rationale. Last updated 2026-05-13.
+Pinned dependency versions and rationale. Last updated 2026-05-15 (Day 2).
 
 ## Runtime
 
@@ -15,7 +15,8 @@ Pinned dependency versions and rationale. Last updated 2026-05-13.
 | --- | --- | --- |
 | `@modelcontextprotocol/sdk` | ^1.29.0 | The official TypeScript SDK. Handles JSON-RPC framing, stdio transport, schema validation, request/response types. Writing this by hand would burn two days for zero portfolio value. |
 | `@linear/sdk` | ^84.0.0 | Linear's official GraphQL client. Typed, idiomatic, maintained. Beats hand-rolling GraphQL queries. |
-| `zod` | ^4.4.3 | Tool input/output validation. The bouncer at the door for inputs an LLM generated. Spec calls this out explicitly. |
+| `@anthropic-ai/sdk` | ^0.96.0 | The official Anthropic SDK. Added Day 2 — the tools call Claude server-side (per-tool model choice + token telemetry need this; MCP "sampling" would hand model choice to the client). `messages.parse()` + `zodOutputFormat()` give schema-constrained JSON output. Justified in LEARNING.md. |
+| `zod` | ^4.4.3 | Tool input/output validation. The bouncer at the door for inputs an LLM generated. Spec calls this out explicitly. Also doubles as the Anthropic structured-output schema. |
 
 ## Dev Dependencies
 

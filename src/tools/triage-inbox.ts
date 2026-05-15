@@ -3,9 +3,10 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { getLinearClient } from "../lib/linear-client.js";
-import { getAnthropicClient, MODELS } from "../lib/anthropic-client.js";
+import { getAnthropicClient, MODELS, UsageSchema, extractUsage } from "../lib/anthropic-client.js";
 import { ConfigError } from "../lib/config.js";
 import { structuredResult, errorResult } from "../lib/tool-result.js";
+import { logToolCall } from "../lib/audit.js";
 
 /**
  * `triage_inbox` — classify a batch of Linear notifications.
@@ -63,12 +64,7 @@ export const TriageInboxOutput = z.object({
   total_triaged: z.number().int(),
   unread_only: z.boolean(),
   model: z.string(),
-  usage: z.object({
-    input_tokens: z.number().int(),
-    output_tokens: z.number().int(),
-    cache_read_input_tokens: z.number().int(),
-    cache_creation_input_tokens: z.number().int(),
-  }),
+  usage: UsageSchema,
   generated_at: z.string(),
 });
 
@@ -268,19 +264,13 @@ async function runTriage(unreadOnly: boolean, maxCount: number): Promise<CallToo
     };
   });
 
-  const u = completion.usage;
   return structuredResult({
     triaged,
     total_fetched: allNodes.length,
     total_triaged: triaged.length,
     unread_only: unreadOnly,
     model: MODELS.HAIKU,
-    usage: {
-      input_tokens: u.input_tokens,
-      output_tokens: u.output_tokens,
-      cache_read_input_tokens: u.cache_read_input_tokens ?? 0,
-      cache_creation_input_tokens: u.cache_creation_input_tokens ?? 0,
-    },
+    usage: extractUsage(completion.usage),
     generated_at: new Date().toISOString(),
   });
 }
@@ -303,16 +293,7 @@ export function registerTriageInboxTool(server: McpServer): void {
       outputSchema: TriageInboxOutput.shape,
     },
     async ({ unread_only, max_count }): Promise<CallToolResult> => {
-      // Audit trail — a minimal record of who called what with which inputs.
-      // Day 9 expands this into a structured logger; the shape is intentional.
-      console.error(
-        JSON.stringify({
-          ts: new Date().toISOString(),
-          event: "tool_call",
-          tool: "triage_inbox",
-          inputs: { unread_only, max_count },
-        }),
-      );
+      logToolCall("triage_inbox", { unread_only, max_count });
 
       try {
         return await runTriage(unread_only, max_count);

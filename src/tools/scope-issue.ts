@@ -6,6 +6,7 @@ import { getLinearClient } from "../lib/linear-client.js";
 import { getAnthropicClient, MODELS, UsageSchema, extractUsage } from "../lib/anthropic-client.js";
 import { ConfigError } from "../lib/config.js";
 import { structuredResult, errorResult } from "../lib/tool-result.js";
+import { logToolCall } from "../lib/audit.js";
 
 /**
  * `scope_issue` — turn a freshly-filed Linear issue into an actionable plan.
@@ -237,14 +238,7 @@ export function registerScopeIssueTool(server: McpServer): void {
       outputSchema: ScopeIssueOutput.shape,
     },
     async ({ issue_id }): Promise<CallToolResult> => {
-      console.error(
-        JSON.stringify({
-          ts: new Date().toISOString(),
-          event: "tool_call",
-          tool: "scope_issue",
-          inputs: { issue_id },
-        }),
-      );
+      logToolCall("scope_issue", { issue_id });
 
       try {
         return await runScope(issue_id);

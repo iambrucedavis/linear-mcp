@@ -2,7 +2,7 @@
 
 An opinionated MCP server for Linear. Six tools that match how a senior engineer runs an issue tracker — not CRUD wrappers, but primitives that produce structured output, have an evaluation harness, and ship with a real security model.
 
-> Status: **in active build**. Day 1 of 14. Not ready for use yet.
+> Status: **in active build**. Day 6 of 14 — all six tools built and registering; eval harness, threat model, cost analysis, and full docs land in Week 2.
 
 ## The six tools
 

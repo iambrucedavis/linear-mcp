@@ -6,6 +6,7 @@ import { getAnthropicClient, MODELS, UsageSchema, extractUsage } from "../lib/an
 import { ConfigError } from "../lib/config.js";
 import { fetchTeamActivity, categorize } from "../lib/team-activity.js";
 import { structuredResult, errorResult } from "../lib/tool-result.js";
+import { logToolCall } from "../lib/audit.js";
 
 /**
  * `weekly_summary` — a narrative summary of a team's activity over a window.
@@ -148,14 +149,7 @@ export function registerWeeklySummaryTool(server: McpServer): void {
       outputSchema: WeeklySummaryOutput.shape,
     },
     async ({ team_key, days }): Promise<CallToolResult> => {
-      console.error(
-        JSON.stringify({
-          ts: new Date().toISOString(),
-          event: "tool_call",
-          tool: "weekly_summary",
-          inputs: { team_key, days },
-        }),
-      );
+      logToolCall("weekly_summary", { team_key, days });
 
       try {
         return await runWeeklySummary(team_key, days);

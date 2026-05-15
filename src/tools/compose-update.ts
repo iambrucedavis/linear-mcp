@@ -6,6 +6,7 @@ import { getAnthropicClient, MODELS, UsageSchema, extractUsage } from "../lib/an
 import { ConfigError } from "../lib/config.js";
 import { fetchTeamActivity, categorize } from "../lib/team-activity.js";
 import { structuredResult, errorResult } from "../lib/tool-result.js";
+import { logToolCall } from "../lib/audit.js";
 
 /**
  * `compose_update` — draft a Slack or email status update in the team's voice.
@@ -182,22 +183,15 @@ export function registerComposeUpdateTool(server: McpServer): void {
       outputSchema: ComposeUpdateOutput.shape,
     },
     async ({ team_key, days, format, audience, voice_samples }): Promise<CallToolResult> => {
-      console.error(
-        JSON.stringify({
-          ts: new Date().toISOString(),
-          event: "tool_call",
-          tool: "compose_update",
-          // Audit the *count* of voice samples, not their content — they may
-          // contain sensitive internal text and do not belong in a log.
-          inputs: {
-            team_key,
-            days,
-            format,
-            audience: audience ?? null,
-            voice_samples_count: voice_samples?.length ?? 0,
-          },
-        }),
-      );
+      // Audit the *count* of voice samples, not their content — they may
+      // contain sensitive internal text and do not belong in a log.
+      logToolCall("compose_update", {
+        team_key,
+        days,
+        format,
+        audience: audience ?? null,
+        voice_samples_count: voice_samples?.length ?? 0,
+      });
 
       try {
         return await runComposeUpdate(team_key, days, format, audience, voice_samples);

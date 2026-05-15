@@ -6,6 +6,7 @@ import { getLinearClient } from "../lib/linear-client.js";
 import { getAnthropicClient, MODELS, UsageSchema, extractUsage } from "../lib/anthropic-client.js";
 import { ConfigError } from "../lib/config.js";
 import { structuredResult, errorResult } from "../lib/tool-result.js";
+import { logToolCall } from "../lib/audit.js";
 
 /**
  * `audit_velocity` — diagnose a team's delivery velocity, with reasoning.
@@ -247,14 +248,7 @@ export function registerAuditVelocityTool(server: McpServer): void {
       outputSchema: AuditVelocityOutput.shape,
     },
     async ({ team_key, cycle_count }): Promise<CallToolResult> => {
-      console.error(
-        JSON.stringify({
-          ts: new Date().toISOString(),
-          event: "tool_call",
-          tool: "audit_velocity",
-          inputs: { team_key, cycle_count },
-        }),
-      );
+      logToolCall("audit_velocity", { team_key, cycle_count });
 
       try {
         return await runAuditVelocity(team_key, cycle_count);

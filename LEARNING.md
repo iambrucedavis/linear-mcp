@@ -4,6 +4,16 @@ Bruce's running notebook. What I learned building the Linear MCP server, explain
 
 ---
 
+## 2026-05-15 (Day 6) — The audit trail rides on stderr
+
+Day 6 was a polish pass. The main change: every tool now logs each call through one shared `logToolCall` function instead of six near-identical inline blocks. Worth a note because of *where* those logs go.
+
+A stdio MCP server has two output channels. stdout carries the JSON-RPC protocol — the actual conversation between the AI client and the server — and a single stray character there corrupts the session. stderr is free for everything else. So the audit trail (one structured JSON line per tool call: timestamp, tool, inputs) is written to stderr, which the MCP host captures separately. The protocol channel stays pristine; the audit channel is a clean, greppable, machine-readable log. This is the `{ tool, inputs, timestamp }` record the Day 9 threat model is built on — and centralizing it in one function means there is exactly one place to harden later.
+
+**Why this matters for the job hunt:** It shows you understand the runtime model you are building on — that stdout is sacred in a stdio server — and that you treat logging as a security artifact (an audit trail), not just debug output. Both are concrete, senior-flavored details.
+
+---
+
 ## 2026-05-15 (Day 5) — Showing the model the voice instead of describing it
 
 `compose_update` writes a status update in a team's voice. The naive approach: a system prompt that *describes* the tone — "be casual but professional, use short sentences." That rarely works; the model's idea of "casual" is not the team's.

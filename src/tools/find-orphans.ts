@@ -6,6 +6,7 @@ import { getLinearClient } from "../lib/linear-client.js";
 import { getAnthropicClient, MODELS, UsageSchema, extractUsage } from "../lib/anthropic-client.js";
 import { ConfigError } from "../lib/config.js";
 import { structuredResult, errorResult } from "../lib/tool-result.js";
+import { logToolCall } from "../lib/audit.js";
 
 /**
  * `find_orphans` — surface issues that have fallen through the cracks.
@@ -275,14 +276,7 @@ export function registerFindOrphansTool(server: McpServer): void {
       outputSchema: FindOrphansOutput.shape,
     },
     async ({ stale_days, max_count, team_key }): Promise<CallToolResult> => {
-      console.error(
-        JSON.stringify({
-          ts: new Date().toISOString(),
-          event: "tool_call",
-          tool: "find_orphans",
-          inputs: { stale_days, max_count, team_key: team_key ?? null },
-        }),
-      );
+      logToolCall("find_orphans", { stale_days, max_count, team_key: team_key ?? null });
 
       try {
         return await runFindOrphans(stale_days, max_count, team_key);

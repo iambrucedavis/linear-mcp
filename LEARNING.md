@@ -4,6 +4,26 @@ Bruce's running notebook. What I learned building the Linear MCP server, explain
 
 ---
 
+## 2026-05-15 (Day 4) — Not every tool needs the AI to think hard
+
+Today's two tools deliberately lean on the LLM less. `find_orphans` finds neglected issues — stale, unassigned, or labelled blocked. Detecting those is a database question, not a reasoning one, so Linear's query engine does the finding and Claude (cheap Haiku) only writes a one-line "here's why, here's what to do" per issue. `audit_velocity` is a query plus a *thin* reasoning layer: the code pulls the sprint numbers, and Claude's only real job is the judgment call — is this a genuine trend or just noise?
+
+The lesson the spec was steering toward: a good MCP tool uses the model for the part that truly needs judgment, and ordinary code for everything else. Sending 200 issues to an LLM and asking "which are stale?" would be slower, pricier, and less accurate than a `WHERE updated_at < cutoff` query. The model is a scalpel, not a hammer.
+
+**Why this matters for the job hunt:** "I used the LLM only where judgment was actually required" is a maturity signal. Plenty of AI products throw the model at everything and end up slow and expensive. Knowing when *not* to reach for it is the senior move.
+
+---
+
+## 2026-05-15 (Day 4) — Let the database do the filtering
+
+`find_orphans` needs issues matching *any* of three conditions: not updated recently, OR unassigned, OR labelled blocked. The naive way: fetch a big pile of issues and sort them out in JavaScript. The way this tool actually works: hand the whole condition to Linear as one GraphQL filter with an `or` clause, and let Linear's query engine return only the matches.
+
+Why it matters: the naive way means downloading hundreds of issues you'll mostly discard — slow, and you can never be sure you fetched far enough back to catch the genuinely ancient ones. Pushing the filter to the server means Linear returns exactly the orphans, computed against its full dataset, in one request. The general principle: do data work as close to the data as possible. The same instinct that says "don't loop in the app when SQL can do it" applies to a GraphQL API.
+
+**Why this matters for the job hunt:** It shows you think about *where* computation happens, not just whether the code runs. Pushing filters down to the data layer is a basic-but-real performance and correctness habit.
+
+---
+
 ## 2026-05-15 (Day 3) — When a tool gets to "think," and when it doesn't
 
 Claude can run two ways: answer immediately, or do hidden reasoning first ("adaptive thinking" — the model itself decides how much to deliberate before replying). Thinking costs extra time and tokens, so it isn't free. The question for each tool: is it worth it?

@@ -5,6 +5,8 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { registerPingTool } from "./tools/ping.js";
 import { registerTriageInboxTool } from "./tools/triage-inbox.js";
 import { registerScopeIssueTool } from "./tools/scope-issue.js";
+import { registerFindOrphansTool } from "./tools/find-orphans.js";
+import { registerAuditVelocityTool } from "./tools/audit-velocity.js";
 
 // Load secrets from a .env file at the project root, if one exists. The path is
 // resolved relative to this compiled file (dist/index.js), so it works no matter
@@ -33,6 +35,8 @@ async function main(): Promise<void> {
   registerPingTool(server);
   registerTriageInboxTool(server);
   registerScopeIssueTool(server);
+  registerFindOrphansTool(server);
+  registerAuditVelocityTool(server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

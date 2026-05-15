@@ -13,6 +13,7 @@
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "eval": "npm run build && tsx tests/evals/run-evals.ts",
     "typecheck": "tsc --noEmit"
   },
   "files": [

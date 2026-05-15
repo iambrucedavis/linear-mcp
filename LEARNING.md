@@ -4,6 +4,26 @@ Bruce's running notebook. What I learned building the Linear MCP server, explain
 
 ---
 
+## 2026-05-15 (Day 8) — The eval harness, and why most MCP servers don't have one
+
+Today's build is the evaluation harness — the single biggest thing separating this from a typical MCP server. Most ship with nothing; "it worked when I tried it" is the whole quality story. That does not survive contact with a model that behaves a little differently every run.
+
+The harness defines 30 ground-truth cases — five per tool. Each case is an input plus *criteria for good enough*. The criteria are not exact-match ("issue BD-12 → urgent") — they can't be, because the data lives in whoever's Linear workspace runs the harness. They are structural and behavioural: does the output match the tool's schema, are the counts internally consistent, is every priority a valid value, is the summary non-empty, does a bogus issue ID produce a clean error. That is a real, automatable quality bar that does not depend on a frozen dataset. Running it emits `docs/EVAL_RESULTS.md` — a pass/fail table per tool.
+
+**Why this matters for the job hunt:** "I built an eval harness for my AI tools" separates someone who has shipped production AI from someone who did a weekend demo. Non-deterministic systems need measurement; saying so, and showing the harness, is the credibility move.
+
+---
+
+## 2026-05-15 (Day 8) — Test the real thing, not a mock
+
+There is a cheap way to build the harness — import each tool's inner function and call it directly. The harness does not do that. It spawns the actual built server as a subprocess and drives it through a real MCP client over stdio — the exact path Claude Desktop or Claude Code uses.
+
+The payoff: the harness exercises everything a mock would skip — the JSON-RPC wiring, zod input validation at the protocol boundary, the structured-output contract, error results crossing the wire. If tool registration is subtly wrong, or an error result fails to serialize, the harness catches it; a direct function call would not. It also degrades gracefully: with no API keys it still runs every deterministic case (input validation, error paths) and reports the rest as skipped — so the harness machinery is verified on every run, keys or not. Today's offline run: 11 deterministic cases, all passing, through the real protocol.
+
+**Why this matters for the job hunt:** "I test through the real interface, not a mock of it" is a testing-philosophy point a senior engineer will recognize and respect. Mocks test your idea of the system; end-to-end tests test the system.
+
+---
+
 ## 2026-05-15 (Day 7) — Why a Personal API key, not OAuth
 
 The spec floated OAuth for week 2. I decided to keep the Personal API key (PAT) and document OAuth as a future extension instead. That's a security decision, so here is the reasoning.

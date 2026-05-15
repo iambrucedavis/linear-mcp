@@ -1,6 +1,6 @@
 # Eval results
 
-Generated 2026-05-15T16:09:16.782Z by `npm run eval`.
+Generated 2026-05-15T16:59:59.059Z by `npm run eval`.
 
 **Mode: OFFLINE** — no API keys were configured. Only deterministic cases (input validation, error paths) ran; live-API cases are reported as skipped. Set `LINEAR_API_KEY` and `ANTHROPIC_API_KEY` (and `EVAL_TEAM_KEY` / `EVAL_ISSUE_ID`) in `.env` and re-run for a full report.
 

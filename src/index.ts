@@ -7,6 +7,8 @@ import { registerTriageInboxTool } from "./tools/triage-inbox.js";
 import { registerScopeIssueTool } from "./tools/scope-issue.js";
 import { registerFindOrphansTool } from "./tools/find-orphans.js";
 import { registerAuditVelocityTool } from "./tools/audit-velocity.js";
+import { registerComposeUpdateTool } from "./tools/compose-update.js";
+import { registerWeeklySummaryTool } from "./tools/weekly-summary.js";
 
 // Load secrets from a .env file at the project root, if one exists. The path is
 // resolved relative to this compiled file (dist/index.js), so it works no matter
@@ -37,6 +39,8 @@ async function main(): Promise<void> {
   registerScopeIssueTool(server);
   registerFindOrphansTool(server);
   registerAuditVelocityTool(server);
+  registerComposeUpdateTool(server);
+  registerWeeklySummaryTool(server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

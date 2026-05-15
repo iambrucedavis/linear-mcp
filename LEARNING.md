@@ -4,6 +4,26 @@ Bruce's running notebook. What I learned building the Linear MCP server, explain
 
 ---
 
+## 2026-05-15 (Day 5) — Showing the model the voice instead of describing it
+
+`compose_update` writes a status update in a team's voice. The naive approach: a system prompt that *describes* the tone — "be casual but professional, use short sentences." That rarely works; the model's idea of "casual" is not the team's.
+
+The tool does it differently. It takes an optional `voice_samples` parameter — up to five real past updates — and the prompt tells the model to study them and match their tone, length, vocabulary, and structure. This is *few-shot prompting* (teaching a model by example instead of by instruction). A model is far better at "write like these three samples" than at "write casually." Show, don't tell — the advice given to human writers turns out to apply to steering an AI too.
+
+**Why this matters for the job hunt:** "I let users supply examples instead of describing what they wanted" shows you understand how LLMs actually learn in-context. It's also a good product instinct — examples are easier for a user to provide than a precise tone description.
+
+---
+
+## 2026-05-15 (Day 5) — Log the count, not the contents
+
+Every tool writes an audit line — a record of which tool ran with which inputs (this becomes the Day 9 audit trail). For most tools that is just the literal inputs. `compose_update` is different: one of its inputs is `voice_samples`, which can be whole past internal updates — possibly sensitive company text.
+
+So its audit line records `voice_samples_count: 3`, not the samples themselves. The principle: an audit log should capture *enough to reconstruct what happened* without becoming a second copy of sensitive data. Logs get shipped to other systems, retained for a long time, and read by people who weren't in the original loop — every field you put in one is a small ongoing liability. Log that voice samples were used and how many; don't log their contents.
+
+**Why this matters for the job hunt:** This is exactly the IAM/security instinct the project is meant to showcase — data minimization in logging. A small, concrete decision a security-minded interviewer will notice, and it sets up the Day 9 threat model.
+
+---
+
 ## 2026-05-15 (Day 4) — Not every tool needs the AI to think hard
 
 Today's two tools deliberately lean on the LLM less. `find_orphans` finds neglected issues — stale, unassigned, or labelled blocked. Detecting those is a database question, not a reasoning one, so Linear's query engine does the finding and Claude (cheap Haiku) only writes a one-line "here's why, here's what to do" per issue. `audit_velocity` is a query plus a *thin* reasoning layer: the code pulls the sprint numbers, and Claude's only real job is the judgment call — is this a genuine trend or just noise?
